@@ -43,6 +43,8 @@ class GoogleLifeSciencesConfig {
     public final static String DEFAULT_ENTRY_POINT = '/bin/bash'
 
     String project
+    String network
+    String subnetwork
     List<String> zones
     List<String> regions
     boolean preemptible
@@ -56,8 +58,10 @@ class GoogleLifeSciencesConfig {
     String copyImage
 
     @Deprecated
-    GoogleLifeSciencesConfig(String project, List<String> zone, List<String> region, Path remoteBinDir = null, boolean preemptible = false) {
+    GoogleLifeSciencesConfig(String project, List<String> zone, List<String> region, String network = 'default', String subnetwork = 'default', Path remoteBinDir = null, boolean preemptible = false) {
         this.project = project
+        this.network = network
+        this.subnetwork = subnetwork
         this.zones = zone
         this.regions = region
         this.remoteBinDir = remoteBinDir
@@ -112,9 +116,13 @@ class GoogleLifeSciencesConfig {
         def zones = (config.navigate("google.zone") as String)?.split(",")?.toList() ?: Collections.<String>emptyList()
         def regions = (config.navigate("google.region") as String)?.split(",")?.toList() ?: Collections.<String>emptyList()
         def location = config.navigate("google.location") as String ?: fallbackToRegionOrZone(regions,zones)
+        def network = config.navigate("google.network") as String ?: 'default'
+        def subnetwork = config.navigate("google.subnetwork") as String ?: 'default'
 
         new GoogleLifeSciencesConfig(
                 project: project,
+                network: network,
+                subnetwork: subnetwork,
                 regions: regions,
                 zones: zones,
                 location: location,

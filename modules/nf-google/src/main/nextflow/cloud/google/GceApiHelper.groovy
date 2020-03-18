@@ -45,6 +45,8 @@ class GceApiHelper {
 
     final String project
     final String zone
+    final String network
+    final String subnetwork
     final Compute compute
 
     Random random = new Random()
@@ -59,10 +61,12 @@ class GceApiHelper {
         this.compute = compute
     }
 
-    GceApiHelper(String project, String zone) throws IOException, GeneralSecurityException {
+    GceApiHelper(String project, String zone, String network , String subnetwork) throws IOException, GeneralSecurityException {
         this.project = project ?: readProject()
         this.zone = zone ?: readZone()
         this.compute = createComputeService(GoogleCredential.getApplicationDefault())
+        this.network = network ?: readNetwork()
+        this.subnetwork = subnetwork ?: readSubnetwork()
     }
 
     static Compute createComputeService(GoogleCredential credential) throws IOException, GeneralSecurityException {
@@ -121,7 +125,15 @@ class GceApiHelper {
 
     NetworkInterface createNetworkInterface() {
         def ifc = new NetworkInterface()
-        ifc.setNetwork("${PROJECT_PREFIX}${project}/global/networks/default")
+        ifc.setNetwork("${PROJECT_PREFIX}${project}/global/networks/${network}")
+        if(subnetwork != 'default') {
+            def splitZone = zone.split('-')
+            if(splitZone.length != 3) {
+                throw new IllegalArgumentException("Expected a valid zone identifier instead of '" + zone + "'")
+            }
+            def region = splitZone[0..1].join('-')
+            ifc.setSubnetwork("${PROJECT_PREFIX}${project}/regions/${region}/subnetworks/${subnetwork}")
+        }
         List<AccessConfig> configs = []
         def config = new AccessConfig()
         config.setType("ONE_TO_ONE_NAT")
@@ -280,6 +292,14 @@ class GceApiHelper {
 
     String readZone() {
         readGoogleMetadata('instance/zone').split("/").last()
+    }
+
+    String readNetwork() {
+        readGoogleMetadata('instance/network-interfaces/0/network').split("/").last()
+    }
+
+    String readSubnetwork() {
+        "default"
     }
 
     String readInstanceId() {

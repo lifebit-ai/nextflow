@@ -288,6 +288,8 @@ class GoogleLifeSciencesTaskHandler extends TaskHandler {
         def req = new GoogleLifeSciencesSubmitRequest()
         req.machineType = getMachineType()
         req.project = executor.config.project
+        req.network = executor.config.network
+        req.subnetwork = executor.config.subnetwork
         req.zone = executor.config.zones
         req.region = executor.config.regions
         req.diskName = DEFAULT_DISK_NAME

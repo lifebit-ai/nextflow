@@ -28,6 +28,7 @@ import com.google.api.services.lifesciences.v2beta.model.Action
 import com.google.api.services.lifesciences.v2beta.model.CancelOperationRequest
 import com.google.api.services.lifesciences.v2beta.model.Disk
 import com.google.api.services.lifesciences.v2beta.model.Mount
+import com.google.api.services.lifesciences.v2beta.model.Network
 import com.google.api.services.lifesciences.v2beta.model.Operation
 import com.google.api.services.lifesciences.v2beta.model.Pipeline
 import com.google.api.services.lifesciences.v2beta.model.Resources
@@ -59,6 +60,7 @@ class GoogleLifeSciencesHelper {
     public static final String SSH_DAEMON_NAME = 'ssh-daemon'
     public static final String DEFAULT_APP_NAME = "Nextflow/GLS"
     public static final String SCOPE_CLOUD_PLATFORM = "https://www.googleapis.com/auth/cloud-platform"
+    private static final String PROJECT_PREFIX = "https://www.googleapis.com/compute/v1/projects/"
 
     CloudLifeSciences client
     GoogleCredentials credentials
@@ -176,9 +178,22 @@ class GoogleLifeSciencesHelper {
 
         def serviceAccount = new ServiceAccount().setScopes( [SCOPE_CLOUD_PLATFORM] )
 
+        def network = new Network()
+            .setNetwork("${PROJECT_PREFIX}${req.project}/global/networks/${req.network}")
+
+        if(req.subnetwork != 'default') {
+            def splitZone = req.zone[0].split('-')
+            if(splitZone.length != 3) {
+                throw new IllegalArgumentException("Expected a valid zone identifier instead of '" + req.zone + "'")
+            }
+            def region = splitZone[0..1].join('-')
+            network.setSubnetwork("${PROJECT_PREFIX}${req.project}/regions/${region}/subnetworks/${req.subnetwork}")
+        }
+
         def vm = new VirtualMachine()
                 .setMachineType(req.machineType)
                 .setDisks([disk])
+                .setNetwork(network)
                 .setServiceAccount(serviceAccount)
                 .setPreemptible(req.preemptible)
 

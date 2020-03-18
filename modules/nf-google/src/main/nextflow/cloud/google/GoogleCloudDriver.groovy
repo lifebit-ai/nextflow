@@ -96,7 +96,9 @@ class GoogleCloudDriver implements CloudDriver {
     GoogleCloudDriver(Map config) {
         String zone = config.zone ?: Global.config?.navigate('google.zone')
         String project = config.project ?: Global.config?.navigate('google.project')
-        this.helper = new GceApiHelper(project, zone)
+        String network = Global.config?.navigate("google.network") as String ?: 'default'
+        String subnetwork = Global.config?.navigate("google.subnetwork") as String ?: 'default'
+        this.helper = new GceApiHelper(project, zone, network, subnetwork)
         log.debug("Starting GoogleCloudDriver in project {} and zone {}", helper.project, helper.zone)
     }
 

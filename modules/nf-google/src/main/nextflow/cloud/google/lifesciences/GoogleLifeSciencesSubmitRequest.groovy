@@ -36,6 +36,10 @@ class GoogleLifeSciencesSubmitRequest {
 
     String project
 
+    String network
+
+    String subnetwork
+
     List<String> zone
 
     List<String> region
