@@ -129,7 +129,7 @@ class GoogleLifeSciencesTaskHandler extends TaskHandler {
 
         final warns = new HashSet()
         for( Event ev : events ) {
-            log.trace "[GLS] task $task.name > event=$ev > event=$ev pipelineResources=${this.metadata?.getPipeline()?.getResources()}"
+            log.debug "[GLS] task $task.name > event=$ev > event=$ev pipelineResources=${this.metadata?.getPipeline()?.getResources()}"
             final d = ev.getDescription()
             // collect warnings
             if( d?.contains('resource_exhausted') )
