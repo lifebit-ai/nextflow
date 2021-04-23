@@ -189,8 +189,7 @@ class AmazonCloudDriver implements CloudDriver {
      */
     protected String fetchIamRole() {
         try {
-            def role = "$(TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-
-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/iam/security-credentials/)"
+            def role = "$(TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/iam/security-credentials/)"
             if( role.size() != 1 )
                 throw new IllegalArgumentException("Not a valid EC2 IAM role")
             return role.get(0)
@@ -211,8 +210,7 @@ metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/iam/security-
      */
     protected String fetchRegion() {
         try {
-            def zone = "$(TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-
-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/availability-zone)"
+            def zone = "$(TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/availability-zone)"
             zone ? zone.substring(0,zone.length()-1) : null
         }
         catch (IOException e) {
@@ -1279,8 +1277,7 @@ metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/ava
     @Override
     String getLocalInstanceId() {
         try {
-            def instance = "$(TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-
-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/instance-id)"
+            def instance = "$(TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/instance-id)"
             return instance
         }
         catch( Exception e ) {
@@ -1302,8 +1299,7 @@ metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/instance-id)"
     @Override
     String getLocalTerminationNotice() {
         try {
-            def spottime = "$(TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-
-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/spot/termination-time)"
+            def spottime = "$(TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/spot/termination-time)"
             return spottime
         }
         catch (Exception e) {
