@@ -67,6 +67,11 @@ class AwsBatchHelper {
         return result
     }
 
+     private String getInstanceIdByClusterAndTaskArn(String clusterArn, String taskArn) {
+         final containerId = getContainerIdByClusterAndTaskArn(clusterArn, taskArn)
+         containerId ? getInstanceIdByClusterAndContainerId(clusterArn, containerId) : null
+    }
+
     private CloudMachineInfo getInfoByClusterAndTaskArn(String clusterArn, String taskArn) {
         final containerId = getContainerIdByClusterAndTaskArn(clusterArn, taskArn)
         final instanceId = getInstanceIdByClusterAndContainerId(clusterArn, containerId)
@@ -119,8 +124,18 @@ class AwsBatchHelper {
                 : null)
     }
 
-        private PriceModel getPrice(Instance instance) {
+    private PriceModel getPrice(Instance instance) {
         instance.getInstanceLifecycle()=='spot' ? PriceModel.spot : PriceModel.standard
+    }
+
+    String getInstanceIdByQueueAndTaskArn(String queue, String taskArn) {
+        final clusterArnList = getClusterArnByBatchQueue(queue)
+        for (String cluster : clusterArnList) {
+            final result = getInstanceIdByClusterAndTaskArn(cluster, taskArn)
+            if (result)
+                return result
+        }
+        return null
     }
 
     CloudMachineInfo getCloudInfoByQueueAndTaskArn(String queue, String taskArn) {

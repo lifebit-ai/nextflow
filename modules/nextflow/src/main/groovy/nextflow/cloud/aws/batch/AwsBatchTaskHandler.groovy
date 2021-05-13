@@ -499,7 +499,7 @@ class AwsBatchTaskHandler extends TaskHandler implements BatchHandler<String,Job
         // the cmd list to launch it
         def opts = getAwsOptions()
         def aws = opts.getAwsCli()
-        def cmd = "trap \"{ ret=\$?; $aws s3 cp --only-show-errors ${TaskRun.CMD_LOG} s3:/${getLogFile()}||true; exit \$ret; }\" EXIT; $aws s3 cp --only-show-errors s3:/${getWrapperFile()} - | bash 2>&1 | tee ${TaskRun.CMD_LOG}"
+        def cmd = "trap \"{ ret=\$?; $aws s3 cp --request-payer --sse AES256 --only-show-errors ${TaskRun.CMD_LOG} s3:/${getLogFile()}||true; exit \$ret; }\" EXIT; $aws s3 cp --request-payer --sse AES256 --only-show-errors s3:/${getWrapperFile()} - | bash 2>&1 | tee ${TaskRun.CMD_LOG}"
         // final launcher command
         return ['bash','-o','pipefail','-c', cmd.toString() ]
     }
@@ -608,8 +608,9 @@ class AwsBatchTaskHandler extends TaskHandler implements BatchHandler<String,Job
         if( machineInfo )
             return machineInfo
         if( queueName && taskArn && executor.awsOptions.fetchInstanceType ) {
+            def instanceId = executor.getInstanceIdByQueueAndTaskArn(queueName, taskArn)
             machineInfo = executor.getMachineInfoByQueueAndTaskArn(queueName, taskArn)
-            log.trace "[AWS BATCH] jobId=$jobId; queue=$queueName; task=$taskArn => machineInfo=$machineInfo"
+            log.trace "[AWS BATCH] jobId=$jobId; queue=$queueName; task=$taskArn => machineInfo=$machineInfo; instanceId=$instanceId\""
         }
         return machineInfo
     }

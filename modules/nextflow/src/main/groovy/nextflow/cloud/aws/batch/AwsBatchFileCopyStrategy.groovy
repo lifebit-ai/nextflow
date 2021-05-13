@@ -128,7 +128,7 @@ class AwsBatchFileCopyStrategy extends SimpleFileCopyStrategy {
     @Override
     String touchFile( Path file ) {
         final aws = opts.getAwsCli()
-        "echo start | $aws s3 cp --only-show-errors - s3:/${Escape.path(file)}"
+        "echo start | $aws s3 cp  --request-payer --sse AES256 --only-show-errors - s3:/${Escape.path(file)}"
     }
 
     /**
@@ -152,7 +152,7 @@ class AwsBatchFileCopyStrategy extends SimpleFileCopyStrategy {
      */
     String exitFile( Path path ) {
         final aws = opts.getAwsCli()
-        "| $aws s3 cp --only-show-errors - s3:/${Escape.path(path)} || true"
+        "| $aws s3 cp  --request-payer --sse AES256 --only-show-errors - s3:/${Escape.path(path)} || true"
     }
 
     /**

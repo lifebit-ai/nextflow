@@ -247,6 +247,19 @@ class AwsBatchExecutor extends Executor {
     @PackageScope
     ThrottlingExecutor getReaper() { reaper }
 
+    String getInstanceIdByQueueAndTaskArn(String queue, String taskArn) {
+        try {
+            return helper?.getInstanceIdByQueueAndTaskArn(queue, taskArn)
+        }
+        catch ( AccessDeniedException e ) {
+            log.warn "Unable to retrieve AWS Batch instance Id | ${e.message}"
+            return null
+        }
+        catch( Exception e ) {
+            log.warn "Unable to retrieve AWS batch instance id for queue=$queue; task=$taskArn | ${e.message}", e
+            return null
+        }
+    }
 
     CloudMachineInfo getMachineInfoByQueueAndTaskArn(String queue, String taskArn) {
         try {
