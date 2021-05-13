@@ -25,6 +25,7 @@ include 'nf-httpfs'
 include 'nf-ga4gh'
 include 'nf-google'
 include 'nf-tower'
+include 'nf-s3fs'
 
 rootProject.children.each { prj ->
     prj.projectDir = new File("$rootDir/modules/$prj.name")

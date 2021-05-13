@@ -154,6 +154,7 @@ dependencies {
     // include Ivy at runtime in order to have Grape @Grab work correctly
     runtime "org.apache.ivy:ivy:2.3.0"
     runtime project(':nf-tower')
+    runtime project(':nf-s3fs')
     // Capsule manages the fat jar building process
     capsule project(':my-capsule')
     ignite  project(':nf-ignite')
