@@ -75,14 +75,23 @@ class Global {
 
         String a
         String b
+        String sessionToken
 
         if( config && config.aws instanceof Map ) {
             a = ((Map)config.aws).accessKey
             b = ((Map)config.aws).secretKey
+            sessionToken = ((Map)config.aws).sessionToken
 
             if( a && b ) {
-                log.debug "Using AWS credentials defined in nextflow config file"
-                return [a, b]
+
+                if( sessionToken ) {
+                    log.debug "Using AWS credentials (with session token) defined in nextflow config file"
+                    return [a,b,sessionToken]
+                }
+                else {
+                    log.debug "Using AWS credentials defined in nextflow config file"
+                    return [a,b]
+                }
             }
 
         }
