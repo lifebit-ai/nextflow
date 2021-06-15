@@ -32,6 +32,11 @@ region="${zone::-1}"
 [[ '!{dockerPull}' ]] && for x in '!{dockerPull}'; do docker pull $x || true; done
 
 #
+# Mount fsx file systems if provided
+#
+[[ '!{fsxFileSystemsMountCommands}' ]] && for fsxMountCommand in '!{fsxFileSystemsMountCommands}'; do $fsxMountCommand || true; done
+
+#
 # Install NEXTFLOW and launch it
 #
 version="v!{nextflow.version}"
