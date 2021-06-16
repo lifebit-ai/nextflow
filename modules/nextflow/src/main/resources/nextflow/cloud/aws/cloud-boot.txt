@@ -40,9 +40,9 @@ region="${zone::-1}"
 # Install NEXTFLOW and launch it
 #
 version="v!{nextflow.version}"
-curl -fsSL http://www.nextflow.io/releases/${version}/nextflow  > $HOME/nextflow
-chmod +x $HOME/nextflow
-$HOME/nextflow -download
+#curl -fsSL http://www.nextflow.io/releases/${version}/nextflow  > $HOME/nextflow
+#chmod +x $HOME/nextflow
+#$HOME/nextflow -download
 
 # pull the nextflow pipeline repo
 [[ '!{nextflow.pull}' ]] && $HOME/nextflow pull '!{nextflow.pull}'
