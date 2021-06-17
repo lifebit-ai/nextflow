@@ -34,7 +34,9 @@ region="${zone::-1}"
 #
 # Mount fsx file systems if provided
 #
-[[ '!{fsxFileSystemsMountCommands}' ]] && for fsxMountCommand in '!{fsxFileSystemsMountCommands}'; do $fsxMountCommand || true; done
+mountCommandsString="!{fsxFileSystemsMountCommands}"
+IFS=',' read -ra mountCommandsArray <<< "$mountCommandsString"
+[[ '!{fsxFileSystemsMountCommands}' ]] && for fsxMountCommand in "${mountCommandsArray[@]}"; do $fsxMountCommand || true; done
 
 #
 # Install NEXTFLOW and launch it
