@@ -105,6 +105,12 @@ class LaunchConfig extends CascadingConfig<String,Object> {
     }
 
     @ConfigField
+    List<String> getFsxFileSystemsMountCommands() {
+        String fileSystemsCommands = getAttribute('fsxFileSystemsMountCommands')
+        return fileSystemsCommands ? fileSystemsCommands.tokenize(';') : Collections.<String>emptyList()
+    }
+
+    @ConfigField
     MemoryUnit getBootStorageSize() {
         getAttribute('bootStorageSize') as MemoryUnit
     }
