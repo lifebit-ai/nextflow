@@ -42,6 +42,11 @@ interface ScriptFileCopyStrategy {
     String getUnstageOutputFilesScript(List<String> outputFiles, Path targetDir)
 
     /**
+     * @return A script snippet that mounts the required fsx file systems commands.
+     */
+    String getFsxFileSystemsMountCommands()
+
+    /**
      * Command to 'touch' a file
      *
      * @param file The absolute path of the file to be 'touched'
