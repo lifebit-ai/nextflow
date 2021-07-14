@@ -90,11 +90,12 @@ class AwsBatchExecutor extends Executor {
 
     protected void validateWorkDir() {
         /*
-         * make sure the work dir is a S3 bucket
+         * make sure the work dir is a S3 bucket and if we are not usign lustre fsx
          */
-        if( !(workDir instanceof S3Path) ) {
+        def isUsingLustre = session.config.navigate('aws.batch.fsxFileSystemsMountCommands')
+        if( !(workDir instanceof S3Path) && !isUsingLustre ) {
             session.abort()
-            throw new AbortOperationException("When using `$name` executor a S3 bucket must be provided as working directory either using -bucket-dir or -work-dir command line option")
+            throw new AbortOperationException("When using `$name` executor and we are not using Lustre storage a S3 bucket must be provided as working directory either using -bucket-dir or -work-dir command line option")
         }
     }
 
