@@ -97,7 +97,7 @@ class AwsOptions {
         delayBetweenAttempts = session.config.navigate('aws.batch.delayBetweenAttempts', DEFAULT_DELAY_BETWEEN_ATTEMPTS) as Duration
         region = session.config.navigate('aws.region') as String
         volumes = makeVols(session.config.navigate('aws.batch.volumes'))
-        fsxFileSystemsMountCommands = session.config.navigate('aws.batch.fsxFileSystemsMountCommands')
+        fsxFileSystemsMountCommands = session.config.navigate('cloud.fsxFileSystemsMountCommands')
         jobRole = session.config.navigate('aws.batch.jobRole')
         fetchInstanceType = session.config.navigate('aws.batch.fetchInstanceType')
         if( fetchInstanceType==null )
