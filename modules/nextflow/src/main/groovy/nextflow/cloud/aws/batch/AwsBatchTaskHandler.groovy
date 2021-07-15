@@ -392,7 +392,7 @@ class AwsBatchTaskHandler extends TaskHandler implements BatchHandler<String,Job
         final jobRole = opts.getJobRole()
         if( jobRole )
             container.setJobRoleArn(jobRole)
-        
+
         final mountsMap = new LinkedHashMap( 10)
         final awscli = opts.cliPath
         if( awscli ) {
@@ -499,7 +499,14 @@ class AwsBatchTaskHandler extends TaskHandler implements BatchHandler<String,Job
         // the cmd list to launch it
         def opts = getAwsOptions()
         def aws = opts.getAwsCli()
-        def cmd = "trap \"{ ret=\$?; $aws s3 cp --request-payer --sse AES256 --only-show-errors ${TaskRun.CMD_LOG} s3:/${getLogFile()}||true; exit \$ret; }\" EXIT; $aws s3 cp --request-payer --sse AES256 --only-show-errors s3:/${getWrapperFile()} - | bash 2>&1 | tee ${TaskRun.CMD_LOG}"
+        def isUsingLustreFsx = !opts.getFsxFileSystemsMountCommands().isEmpty()
+        def logCopyCommand = isUsingLustreFsx
+            ? "cp ${TaskRun.CMD_LOG} ${getLogFile()};"
+            : "$aws s3 cp --request-payer --sse AES256 --only-show-errors ${TaskRun.CMD_LOG} s3:/${getLogFile()}||true;"
+        def runCopyCommand = isUsingLustreFsx
+            ? "cat \"${getWrapperFile()}\" >> ${TaskRun.CMD_LOG}"
+            : "$aws s3 cp --request-payer --sse AES256 --only-show-errors s3:/${getWrapperFile()} - | bash 2>&1 | tee ${TaskRun.CMD_LOG}"
+        def cmd = "trap \"{ ret=\$?; ${logCopyCommand} exit \$ret; }\" EXIT; ${runCopyCommand}"
         // final launcher command
         return ['bash','-o','pipefail','-c', cmd.toString() ]
     }

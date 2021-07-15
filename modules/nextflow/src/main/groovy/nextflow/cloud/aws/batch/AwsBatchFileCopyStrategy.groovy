@@ -58,9 +58,10 @@ class AwsBatchFileCopyStrategy extends SimpleFileCopyStrategy {
     @Override
     String getFsxFileSystemsMountCommands() {
         final result = new StringBuilder()
+        result << "# LUSTRE FSX MOUNT COMMANDS\n"
         for( String fsxMountCommand : opts.getFsxFileSystemsMountCommands() ) {
             log.trace "[USING LUSTRE FSX] Mount command: $fsxMountCommand"
-            result << "$fsxMountCommand"
+            result << "$fsxMountCommand\n"
         }
         return result.toString()
     }
