@@ -506,7 +506,8 @@ class AwsBatchTaskHandler extends TaskHandler implements BatchHandler<String,Job
         def runCopyCommand = isUsingLustreFsx
             ? "cat \"${getWrapperFile()}\" >> ${TaskRun.CMD_LOG}"
             : "$aws s3 cp --request-payer --sse AES256 --only-show-errors s3:/${getWrapperFile()} - | bash 2>&1 | tee ${TaskRun.CMD_LOG}"
-        def cmd = "trap \"{ ret=\$?; ${logCopyCommand} exit \$ret; }\" EXIT; ${runCopyCommand}"
+        def fsxMountCommands = isUsingLustreFsx ? opts.getFsxFileSystemsMountCommands().join(';'): ''
+        def cmd = "${fsxMountCommands}; trap \"{ ret=\$?; ${logCopyCommand} exit \$ret; }\" EXIT; ${runCopyCommand}"
         // final launcher command
         return ['bash','-o','pipefail','-c', cmd.toString() ]
     }
