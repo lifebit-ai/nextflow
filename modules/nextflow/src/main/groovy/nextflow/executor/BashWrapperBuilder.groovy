@@ -169,7 +169,7 @@ class BashWrapperBuilder {
         }
         result.toString()
     }
-    
+
     protected Map<String,String> makeBinding() {
         /*
          * initialise command files
@@ -209,6 +209,7 @@ class BashWrapperBuilder {
         binding.header_script = headerScript
         binding.task_name = name
         binding.helpers_script = getHelpersScript()
+        binding.fsx_filesystem_mount_commands = copyStrategy.getFsxFileSystemsMountCommands()
 
         if( runWithContainer ) {
             binding.container_boxid = 'export NXF_BOXID="nxf-$(dd bs=18 count=1 if=/dev/urandom 2>/dev/null | base64 | tr +/ 0A)"'
@@ -244,12 +245,6 @@ class BashWrapperBuilder {
             binding.container_env = null
         }
 
-        /*
-         * staging input files when required
-         */
-        final stagingScript = copyStrategy.getStageInputFilesScript(inputFiles)
-        binding.stage_inputs = stagingScript ? "# stage input files\n${stagingScript}" : null
-
         binding.stdout_file = TaskRun.CMD_OUTFILE
         binding.stderr_file = TaskRun.CMD_ERRFILE
         binding.trace_file = TaskRun.CMD_TRACE
@@ -258,12 +253,28 @@ class BashWrapperBuilder {
         binding.launch_cmd = getLaunchCommand(interpreter,env)
         binding.stage_cmd = getStageCommand()
         binding.unstage_cmd = getUnstageCommand()
-        binding.unstage_controls = changeDir ? getUnstageControls() : null
 
-        if( changeDir || shouldUnstageOutputs() ) {
-            binding.unstage_outputs = copyStrategy.getUnstageOutputFilesScript(outputFiles,targetDir)
+        final hasLustreFsxCommands = binding.fsx_filesystem_mount_commands.length() > 0
+
+        if( !hasLustreFsxCommands ) {
+            /*
+             * staging input and unstage output files when required
+             */
+            final stagingScript = copyStrategy.getStageInputFilesScript(inputFiles)
+            binding.stage_inputs = stagingScript ? "# stage input files\n${stagingScript}" : null
+            binding.unstage_controls = changeDir ? getUnstageControls() : null
+
+            if( changeDir || shouldUnstageOutputs() ) {
+                binding.unstage_outputs = copyStrategy.getUnstageOutputFilesScript(outputFiles,targetDir)
+            }
+            else {
+                binding.unstage_outputs = null
+            }
         }
         else {
+            log.trace "[USING LUSTRE FSX] - Skipping stage_inputs, unstage_controls, and unstage_outputs."
+            binding.stage_inputs = null
+            binding.unstage_controls = null
             binding.unstage_outputs = null
         }
 
@@ -273,7 +284,7 @@ class BashWrapperBuilder {
         binding.fix_ownership = fixOwnership() ? "[ \${NXF_OWNER:=''} ] && chown -fR --from root \$NXF_OWNER ${workDir}/{*,.*} || true" : null
 
         binding.trace_script = isTraceRequired() ? getTraceScript(binding) : null
-        
+
         return binding
     }
 
@@ -395,7 +406,7 @@ class BashWrapperBuilder {
     private String copyFileToWorkDir(String fileName) {
         copyFile(fileName, workDir.resolve(fileName))
     }
-    
+
 
     String getCleanupCmd(String scratch) {
         String result = ''

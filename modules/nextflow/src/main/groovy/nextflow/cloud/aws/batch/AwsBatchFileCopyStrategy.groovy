@@ -53,6 +53,20 @@ class AwsBatchFileCopyStrategy extends SimpleFileCopyStrategy {
     }
 
     /**
+     * @return A script snippet that mounts the required fsx file systems commands.
+     */
+    @Override
+    String getFsxFileSystemsMountCommands() {
+        final result = new StringBuilder()
+        result << "# LUSTRE FSX MOUNT COMMANDS\n"
+        for( String fsxMountCommand : opts.getFsxFileSystemsMountCommands() ) {
+            log.trace "[USING LUSTRE FSX] Mount command: $fsxMountCommand"
+            result << "$fsxMountCommand\n"
+        }
+        return result.toString()
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -128,7 +142,10 @@ class AwsBatchFileCopyStrategy extends SimpleFileCopyStrategy {
     @Override
     String touchFile( Path file ) {
         final aws = opts.getAwsCli()
-        "echo start | $aws s3 cp  --request-payer --sse AES256 --only-show-errors - s3:/${Escape.path(file)}"
+        final isUsingLustreFsx = !opts.getFsxFileSystemsMountCommands().isEmpty()
+        final touchCommandWhenUsingLustre = "echo start > ${Escape.path(file)}"
+        final touchCommandWhenUsingS3 = "echo start | $aws s3 cp  --request-payer --sse AES256 --only-show-errors - s3:/${Escape.path(file)}"
+        return isUsingLustreFsx ? touchCommandWhenUsingLustre : touchCommandWhenUsingS3
     }
 
     /**
@@ -144,7 +161,10 @@ class AwsBatchFileCopyStrategy extends SimpleFileCopyStrategy {
      */
     @Override
     String copyFile( String name, Path target ) {
-        "nxf_s3_upload ${Escape.path(name)} s3:/${Escape.path(target.getParent())}"
+        final isUsingLustreFsx = !opts.getFsxFileSystemsMountCommands().isEmpty()
+        final copyCommandWhenUsingLustre = "cp ${Escape.path(name)} ${Escape.path(target.getParent())}"
+        final copyCommandWhenUsingS3 = "nxf_s3_upload ${Escape.path(name)} s3:/${Escape.path(target.getParent())}"
+        return isUsingLustreFsx ? copyCommandWhenUsingLustre : copyCommandWhenUsingS3
     }
 
     /**
@@ -152,7 +172,10 @@ class AwsBatchFileCopyStrategy extends SimpleFileCopyStrategy {
      */
     String exitFile( Path path ) {
         final aws = opts.getAwsCli()
-        "| $aws s3 cp  --request-payer --sse AES256 --only-show-errors - s3:/${Escape.path(path)} || true"
+        final isUsingLustreFsx = !opts.getFsxFileSystemsMountCommands().isEmpty()
+        final exitCommandWhenUsingLustre = "> ${Escape.path(path)}"
+        final exitCommandWhenUsingS3 = "| $aws s3 cp  --request-payer --sse AES256 --only-show-errors - s3:/${Escape.path(path)} || true"
+        return isUsingLustreFsx ? exitCommandWhenUsingLustre : exitCommandWhenUsingS3
     }
 
     /**

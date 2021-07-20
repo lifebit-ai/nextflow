@@ -40,7 +40,7 @@ class AwsOptions {
     static final public int MAX_TRANSFER_ATTEMPTS = 1
 
     static final public Duration DEFAULT_DELAY_BETWEEN_ATTEMPTS = Duration.of('10sec')
-  
+
     String cliPath
 
     String storageClass
@@ -71,6 +71,15 @@ class AwsOptions {
 
     List<String> getVolumes() { volumes != null ? Collections.unmodifiableList(volumes) : Collections.<String>emptyList() }
 
+    /**
+     * Lustre fsx mount commands
+     */
+    String fsxFileSystemsMountCommands
+
+    List<String> getFsxFileSystemsMountCommands() {
+        return fsxFileSystemsMountCommands ? fsxFileSystemsMountCommands.tokenize(';') : Collections.<String>emptyList()
+    }
+
     /* Only for testing purpose */
     protected AwsOptions() { }
 
@@ -88,6 +97,7 @@ class AwsOptions {
         delayBetweenAttempts = session.config.navigate('aws.batch.delayBetweenAttempts', DEFAULT_DELAY_BETWEEN_ATTEMPTS) as Duration
         region = session.config.navigate('aws.region') as String
         volumes = makeVols(session.config.navigate('aws.batch.volumes'))
+        fsxFileSystemsMountCommands = session.config.navigate('cloud.fsxFileSystemsMountCommands')
         jobRole = session.config.navigate('aws.batch.jobRole')
         fetchInstanceType = session.config.navigate('aws.batch.fetchInstanceType')
         if( fetchInstanceType==null )

@@ -39,6 +39,11 @@ class TesFileCopyStrategy implements ScriptFileCopyStrategy {
         return null
     }
 
+    @Override
+    String getFsxFileSystemsMountCommands() {
+        return ''
+    }
+
     /**
      * {@inheritDoc}
      */

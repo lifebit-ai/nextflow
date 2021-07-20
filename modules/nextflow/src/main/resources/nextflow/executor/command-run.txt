@@ -20,6 +20,7 @@ set -u
 NXF_DEBUG=${NXF_DEBUG:=0}; [[ $NXF_DEBUG > 1 ]] && set -x
 NXF_ENTRY=${1:-nxf_main}
 
+{{fsx_filesystem_mount_commands}}
 {{trace_script}}
 {{helpers_script}}
 {{container_env}}
