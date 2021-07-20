@@ -500,16 +500,25 @@ class AwsBatchTaskHandler extends TaskHandler implements BatchHandler<String,Job
         def opts = getAwsOptions()
         def aws = opts.getAwsCli()
         def isUsingLustreFsx = !opts.getFsxFileSystemsMountCommands().isEmpty()
+        // Note(ruben): Since we already have access to the .command.log on the fsx file system work dir folder
+        // we do not need to copy from the root of the compute env image to the work dir again.
         def logCopyCommand = isUsingLustreFsx
-            ? "cp ${TaskRun.CMD_LOG} ${getLogFile()};"
+            ? ""
             : "$aws s3 cp --request-payer --sse AES256 --only-show-errors ${TaskRun.CMD_LOG} s3:/${getLogFile()}||true;"
+        // Note(ruben): Since we do not download the .command.run from s3 bucket and due the fact that is auto imported
+        // through the link capacity of fsx when mounting we have already access to the file. So, we just need to make it
+        // executable and run it
         def runCopyCommand = isUsingLustreFsx
-            ? "cat \"${getWrapperFile()}\" >> ${TaskRun.CMD_LOG}"
+            ? "chmod +x \"${getWrapperFile()}\" && \"${getWrapperFile()}\" 2>&1 | tee ${TaskRun.CMD_LOG}"
             : "$aws s3 cp --request-payer --sse AES256 --only-show-errors s3:/${getWrapperFile()} - | bash 2>&1 | tee ${TaskRun.CMD_LOG}"
-        def fsxMountCommands = isUsingLustreFsx ? opts.getFsxFileSystemsMountCommands().join(';'): ''
-        def cmd = "${fsxMountCommands}; trap \"{ ret=\$?; ${logCopyCommand} exit \$ret; }\" EXIT; ${runCopyCommand}"
+        // Note(ruben): We remove sudo from the command since we already run as root and sudo is not
+        // installed on the current image attached to the compute environment
+        def fsxMountCommands = isUsingLustreFsx
+            ? opts.getFsxFileSystemsMountCommands().join('; ').replaceAll("sudo", "").replaceAll("fsx", "/home/ec2-user/fsx")
+            : ''
+        def cmd = "trap \"{ ret=\$?; ${logCopyCommand} exit \$ret; }\" EXIT; ${runCopyCommand}"
         // final launcher command
-        return ['bash','-o','pipefail','-c', cmd.toString() ]
+        return ["${fsxMountCommands};", "&&", 'bash','-o','pipefail','-c', cmd.toString() ]
     }
 
     /**
